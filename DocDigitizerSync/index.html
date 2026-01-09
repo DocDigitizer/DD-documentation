@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocDigitizer Sync - Usage Guide</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h3 {
+            color: var(--gray-800);
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background: var(--gray-900);
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+
+        :not(pre) > code {
+            background: var(--gray-100);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: var(--gray-800);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        th {
+            background: var(--gray-100);
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 1rem 0;
+        }
+
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-600);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DocDigitizer Sync</h1>
+        <p>Intelligent Document Processing API</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#quickstart">Quick Start</a></li>
+            <li><a href="#processing">Processing Documents</a></li>
+            <li><a href="#results">Understanding Results</a></li>
+            <li><a href="#powershell">PowerShell Tools</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="introduction">
+            <h2>What is DocDigitizer Sync?</h2>
+            <p>DocDigitizer Sync transforms your PDF documents into structured, actionable data. Simply upload a document and receive extracted information in JSON format.</p>
+
+            <h3>Key Features</h3>
+            <ul>
+                <li><strong>OCR Extraction</strong> - Extract text from scanned documents using Google Cloud Vision</li>
+                <li><strong>Document Classification</strong> - Automatically identify document types (invoice, receipt, contract, etc.)</li>
+                <li><strong>AI-Powered Extraction</strong> - Extract structured fields using advanced language models</li>
+                <li><strong>Multi-Document Processing</strong> - Automatically split and process PDFs with multiple documents</li>
+            </ul>
+
+            <h3>Supported Document Types</h3>
+            <table>
+                <tr><th>Type</th><th>Description</th></tr>
+                <tr><td>Invoice</td><td>Commercial invoices with line items</td></tr>
+                <tr><td>Receipt</td><td>Point-of-sale receipts</td></tr>
+                <tr><td>Contract</td><td>Legal contracts and agreements</td></tr>
+                <tr><td>CV</td><td>Resumes and curriculum vitae</td></tr>
+                <tr><td>ID Document</td><td>Identity documents</td></tr>
+                <tr><td>Bank Statement</td><td>Financial statements</td></tr>
+            </table>
+        </section>
+
+        <section id="quickstart">
+            <h2>Quick Start</h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Get Your API Key</h3>
+                    <p>Request an API key at <a href="https://docdigitizer.com/contact">docdigitizer.com/contact</a></p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Send Your First Document</h3>
+                    <pre><code>curl -X POST https://apix.docdigitizer.com/sync \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -F "file=@invoice.pdf"</code></pre>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Receive Extracted Data</h3>
+                    <p>Get structured JSON with classified document type and extracted fields.</p>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <strong>Tip:</strong> Include the <code>X-DD-TraceId</code> from the response when contacting support for faster resolution.
+            </div>
+        </section>
+
+        <section id="processing">
+            <h2>Processing Documents</h2>
+
+            <h3>API Endpoint</h3>
+            <pre><code>POST https://apix.docdigitizer.com/sync</code></pre>
+
+            <h3>Request Headers</h3>
+            <table>
+                <tr><th>Header</th><th>Value</th><th>Required</th></tr>
+                <tr><td>X-API-Key</td><td>Your API key</td><td>Yes</td></tr>
+                <tr><td>Content-Type</td><td>multipart/form-data</td><td>Yes</td></tr>
+            </table>
+
+            <h3>Request Parameters</h3>
+            <table>
+                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                <tr><td>file</td><td>File</td><td>PDF document to process (required)</td></tr>
+                <tr><td>pipeline</td><td>String</td><td>Specific pipeline to use (optional)</td></tr>
+                <tr><td>documentId</td><td>UUID</td><td>Custom document ID (optional)</td></tr>
+                <tr><td>contextId</td><td>UUID</td><td>Context ID for grouping (optional)</td></tr>
+            </table>
+
+            <h3>Example: Process an Invoice</h3>
+            <pre><code>curl -X POST https://apix.docdigitizer.com/sync \
+  -H "X-API-Key: sk_live_abc123..." \
+  -F "file=@/path/to/invoice.pdf"</code></pre>
+        </section>
+
+        <section id="results">
+            <h2>Understanding Results</h2>
+
+            <h3>Response Structure</h3>
+            <pre><code>{
+  "requestToken": "ABC1234",
+  "state": "Completed",
+  "pipeline": "MainPipelineWithOCR",
+  "pageCount": 3,
+  "output": {
+    "extractions": [
+      {
+        "documentType": "Invoice",
+        "fields": {
+          "invoiceNumber": "INV-2024-001",
+          "date": "2024-01-15",
+          "totalAmount": 1250.00,
+          "vendorName": "Acme Corp"
+        }
+      }
+    ]
+  },
+  "timers": {
+    "total": 2345.67,
+    "ocr": 1200.00
+  }
+}</code></pre>
+
+            <h3>Response Fields</h3>
+            <table>
+                <tr><th>Field</th><th>Description</th></tr>
+                <tr><td>requestToken</td><td>Unique trace ID for this request</td></tr>
+                <tr><td>state</td><td>Processing status: Completed, Failed, Partial</td></tr>
+                <tr><td>pipeline</td><td>Pipeline used for processing</td></tr>
+                <tr><td>pageCount</td><td>Number of pages processed</td></tr>
+                <tr><td>output.extractions</td><td>Array of extracted documents</td></tr>
+                <tr><td>timers</td><td>Processing time breakdown (ms)</td></tr>
+            </table>
+
+            <h3>Multi-Document Results</h3>
+            <p>When a PDF contains multiple documents, each is returned as a separate entry in the <code>extractions</code> array with its own document type and fields.</p>
+        </section>
+
+        <section id="powershell">
+            <h2>PowerShell Tools</h2>
+            <p>For Windows users, we provide a PowerShell module for easy integration.</p>
+
+            <h3>Installation</h3>
+            <pre><code># Set your API key
+$env:DOCDIGITIZER_APIKEY = "your-api-key-here"
+
+# Import the module
+Import-Module .\cmdlets\DocDigitizer.psd1</code></pre>
+
+            <h3>Available Commands</h3>
+            <table>
+                <tr><th>Command</th><th>Description</th></tr>
+                <tr><td>Send-DocDigitizerDocument</td><td>Process a PDF document</td></tr>
+                <tr><td>Test-DocDigitizerConnection</td><td>Test API connectivity</td></tr>
+                <tr><td>Get-DocDigitizerConfig</td><td>View current settings</td></tr>
+                <tr><td>Set-DocDigitizerConfig</td><td>Update settings</td></tr>
+                <tr><td>Get-DocDigitizerHelp</td><td>Show help</td></tr>
+            </table>
+
+            <h3>Usage Examples</h3>
+            <pre><code># Process a single document
+Send-DocDigitizerDocument -FilePath "invoice.pdf"
+
+# Process and save result to JSON
+Send-DocDigitizerDocument -FilePath "invoice.pdf" -SaveExtraction
+
+# Process all PDFs in a folder
+Get-ChildItem *.pdf | Send-DocDigitizerDocument -SaveExtraction</code></pre>
+
+            <p><a href="cmdlets/README.md">View full cmdlets documentation</a></p>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>Troubleshooting</h2>
+
+            <h3>Common Issues</h3>
+
+            <h4>Document not recognized</h4>
+            <ul>
+                <li>Ensure the document is clear and readable</li>
+                <li>Check that text is not too small or blurry</li>
+                <li>Verify the PDF is not corrupted</li>
+            </ul>
+
+            <h4>Timeout on large documents</h4>
+            <ul>
+                <li>Large documents take longer to process</li>
+                <li>Consider splitting very large PDFs</li>
+                <li>Contact support for high-volume processing</li>
+            </ul>
+
+            <h4>Missing fields in extraction</h4>
+            <ul>
+                <li>Some fields may not be present in all documents</li>
+                <li>Field names may vary by document type</li>
+                <li>Contact support for custom extraction schemas</li>
+            </ul>
+
+            <h4>Authentication errors</h4>
+            <ul>
+                <li>Verify your API key is correct</li>
+                <li>Ensure the key is included in the X-API-Key header</li>
+                <li>Check if your key has expired</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>
+            <a href="documentation.md">Technical Documentation</a> |
+            <a href="openapi.yaml">API Specification</a> |
+            <a href="cmdlets/README.md">PowerShell Cmdlets</a>
+        </p>
+        <p style="margin-top: 1rem;">
+            Need help? Contact <a href="https://docdigitizer.com/contact">DocDigitizer Support</a>
+        </p>
+    </footer>
+</body>
+</html>

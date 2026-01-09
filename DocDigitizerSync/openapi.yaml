@@ -1,0 +1,247 @@
+openapi: 3.0.3
+info:
+  title: DocDigitizer Sync API
+  description: |
+    Intelligent document processing API that transforms unstructured documents
+    into structured, actionable data through OCR, classification, and AI-powered extraction.
+  version: 1.0.0
+  contact:
+    name: DocDigitizer Support
+    url: https://docdigitizer.com/contact
+
+servers:
+  - url: https://apix.docdigitizer.com/sync
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /:
+    get:
+      summary: Health check
+      description: Check if the API is available and responding
+      operationId: healthCheck
+      tags:
+        - Health
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "I am alive"
+
+    post:
+      summary: Process document
+      description: |
+        Upload a PDF document for processing. The API will perform OCR,
+        classify the document type, and extract structured data.
+      operationId: processDocument
+      tags:
+        - Document Processing
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF document to process
+                pipeline:
+                  type: string
+                  description: Specific pipeline to use (optional, auto-selected if not provided)
+                  example: MainPipelineWithOCR
+                documentId:
+                  type: string
+                  format: uuid
+                  description: Custom document identifier (optional)
+                contextId:
+                  type: string
+                  format: uuid
+                  description: Context identifier for grouping related documents (optional)
+      responses:
+        '200':
+          description: Document processed successfully
+          headers:
+            X-DD-TraceId:
+              description: Request trace ID for debugging
+              schema:
+                type: string
+                example: ABC1234
+            X-DD-Timer-Total:
+              description: Total processing time in milliseconds
+              schema:
+                type: number
+                example: 2345.67
+            X-DD-Timer-OCR:
+              description: OCR processing time in milliseconds
+              schema:
+                type: number
+                example: 1200.00
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingResult'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+  schemas:
+    ProcessingResult:
+      type: object
+      properties:
+        requestToken:
+          type: string
+          description: Unique trace ID for this request
+          example: ABC1234
+        state:
+          type: string
+          enum: [Completed, Failed, Partial]
+          description: Processing status
+          example: Completed
+        pipeline:
+          type: string
+          description: Pipeline used for processing
+          example: MainPipelineWithOCR
+        pageCount:
+          type: integer
+          description: Number of pages in the document
+          example: 3
+        output:
+          $ref: '#/components/schemas/ProcessingOutput'
+        timers:
+          $ref: '#/components/schemas/Timers'
+      required:
+        - requestToken
+        - state
+
+    ProcessingOutput:
+      type: object
+      properties:
+        extractions:
+          type: array
+          description: Array of extracted documents
+          items:
+            $ref: '#/components/schemas/Extraction'
+
+    Extraction:
+      type: object
+      properties:
+        documentType:
+          type: string
+          description: Classified document type
+          example: Invoice
+        confidence:
+          type: number
+          format: float
+          description: Classification confidence score (0-1)
+          example: 0.95
+        pageRange:
+          type: object
+          properties:
+            start:
+              type: integer
+              example: 1
+            end:
+              type: integer
+              example: 2
+        fields:
+          type: object
+          description: Extracted fields (varies by document type)
+          additionalProperties: true
+          example:
+            invoiceNumber: "INV-2024-001"
+            date: "2024-01-15"
+            totalAmount: 1250.00
+            vendorName: "Acme Corp"
+            lineItems:
+              - description: "Product A"
+                quantity: 2
+                unitPrice: 500.00
+                total: 1000.00
+
+    Timers:
+      type: object
+      description: Processing time breakdown in milliseconds
+      properties:
+        total:
+          type: number
+          description: Total processing time
+          example: 2345.67
+        ocr:
+          type: number
+          description: OCR processing time
+          example: 1200.00
+        classification:
+          type: number
+          description: Classification time
+          example: 450.00
+        extraction:
+          type: number
+          description: Data extraction time
+          example: 695.67
+
+    ErrorResponse:
+      type: object
+      properties:
+        requestToken:
+          type: string
+          description: Request trace ID
+          example: XYZ7890
+        state:
+          type: string
+          enum: [Failed]
+          example: Failed
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Error code
+              example: INVALID_FILE
+            message:
+              type: string
+              description: Human-readable error message
+              example: "The uploaded file is not a valid PDF"
+      required:
+        - error
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Document Processing
+    description: Document upload and processing endpoints

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocOntology - Usage Guide</title>
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h3 {
+            color: var(--gray-800);
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background: var(--gray-900);
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+
+        :not(pre) > code {
+            background: var(--gray-100);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: var(--gray-800);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        th {
+            background: var(--gray-100);
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: #d1fae5;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+            margin: 1rem 0;
+        }
+
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .lifecycle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .lifecycle-state {
+            background: var(--gray-200);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .lifecycle-state.draft { background: #fef3c7; color: #92400e; }
+        .lifecycle-state.active { background: #d1fae5; color: #065f46; }
+        .lifecycle-state.deprecated { background: #fee2e2; color: #991b1b; }
+
+        .lifecycle-arrow {
+            color: var(--gray-600);
+            font-size: 1.2rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-600);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DocOntology</h1>
+        <p>Schema Registry for Document Extraction</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#concepts">Core Concepts</a></li>
+            <li><a href="#quickstart">Quick Start</a></li>
+            <li><a href="#schemas">Working with Schemas</a></li>
+            <li><a href="#cli">CLI Tools</a></li>
+            <li><a href="#api">API Examples</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="introduction">
+            <h2>What is DocOntology?</h2>
+            <p>DocOntology is a centralized schema registry that manages JSON schemas for document extraction pipelines. It helps you organize and select the right extraction schema for any document type.</p>
+
+            <h3>Key Features</h3>
+            <ul>
+                <li><strong>Version-Controlled Schemas</strong> - Track changes with automatic versioning</li>
+                <li><strong>Lifecycle Management</strong> - Move schemas through draft, active, and deprecated states</li>
+                <li><strong>Smart Selection</strong> - Automatically find the best schema based on document type and country</li>
+                <li><strong>Multi-Tenant Support</strong> - Customer-specific schemas with visibility controls</li>
+            </ul>
+        </section>
+
+        <section id="concepts">
+            <h2>Core Concepts</h2>
+
+            <h3>Document Types</h3>
+            <p>Document types categorize what kind of document is being processed.</p>
+            <table>
+                <tr><th>Code</th><th>Description</th></tr>
+                <tr><td>Invoice</td><td>Commercial invoices with line items</td></tr>
+                <tr><td>Receipt</td><td>Point-of-sale receipts</td></tr>
+                <tr><td>Contract</td><td>Legal contracts and agreements</td></tr>
+                <tr><td>CV</td><td>Resumes and curriculum vitae</td></tr>
+                <tr><td>BankStatement</td><td>Financial statements</td></tr>
+            </table>
+
+            <h3>Countries</h3>
+            <p>Countries use ISO 3166-1 alpha-2 codes. Schemas can be country-specific or generic (no country).</p>
+            <table>
+                <tr><th>Code</th><th>Country</th></tr>
+                <tr><td>PT</td><td>Portugal</td></tr>
+                <tr><td>ES</td><td>Spain</td></tr>
+                <tr><td>DE</td><td>Germany</td></tr>
+                <tr><td>FR</td><td>France</td></tr>
+            </table>
+
+            <h3>Schema Lifecycle</h3>
+            <div class="lifecycle">
+                <span class="lifecycle-state draft">Draft</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-state active">Active</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-state deprecated">Deprecated</span>
+            </div>
+            <ul>
+                <li><strong>Draft</strong>: Can be modified freely, not yet in use</li>
+                <li><strong>Active</strong>: Published and in use, updates create new versions</li>
+                <li><strong>Deprecated</strong>: No longer recommended, kept for reference</li>
+            </ul>
+
+            <h3>Visibility Levels</h3>
+            <table>
+                <tr><th>Level</th><th>Access</th><th>Requirements</th></tr>
+                <tr><td>Public</td><td>Everyone</td><td>Requires country code</td></tr>
+                <tr><td>Community</td><td>Logged-in users</td><td>-</td></tr>
+                <tr><td>Private</td><td>Owner only</td><td>Requires customer ID</td></tr>
+            </table>
+        </section>
+
+        <section id="quickstart">
+            <h2>Quick Start</h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Get Your API Key</h3>
+                    <p>Request an API key at <a href="https://docdigitizer.com/contact">docdigitizer.com/contact</a></p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Find a Schema</h3>
+                    <pre><code>curl -X POST https://api.docdigitizer.com/registry/schemas/find-best \
+  -H "Content-Type: application/json" \
+  -d '{"docTypeCode": "Invoice", "countryCode": "PT"}'</code></pre>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Use the Schema</h3>
+                    <p>The response includes the JSON schema definition to use for field extraction.</p>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <strong>Selection Priority:</strong> The system first looks for your private schemas, then public schemas with an exact country match, then generic public schemas.
+            </div>
+        </section>
+
+        <section id="schemas">
+            <h2>Working with Schemas</h2>
+
+            <h3>Creating a Schema</h3>
+            <p>Schemas start in draft status and must be activated before use.</p>
+            <pre><code>curl -X POST https://api.docdigitizer.com/registry/admin/schemas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Invoice Portugal",
+    "content": {
+      "type": "object",
+      "properties": {
+        "invoiceNumber": {"type": "string"},
+        "nif": {"type": "string"},
+        "totalAmount": {"type": "number"}
+      }
+    },
+    "docTypeCode": "Invoice",
+    "countryCode": "PT",
+    "visibility": "public"
+  }'</code></pre>
+
+            <h3>Activating a Schema</h3>
+            <pre><code>curl -X POST https://api.docdigitizer.com/registry/admin/schemas/sch_abc123/activate</code></pre>
+
+            <h3>Finding the Best Schema</h3>
+            <pre><code>curl -X POST https://api.docdigitizer.com/registry/schemas/find-best \
+  -H "Content-Type: application/json" \
+  -d '{
+    "docTypeCode": "Invoice",
+    "countryCode": "PT"
+  }'</code></pre>
+
+            <h3>Listing Schemas</h3>
+            <pre><code># List active schemas
+curl "https://api.docdigitizer.com/registry/admin/schemas?status=active"
+
+# Filter by document type
+curl "https://api.docdigitizer.com/registry/admin/schemas?docTypeCode=Invoice"</code></pre>
+        </section>
+
+        <section id="cli">
+            <h2>CLI Tools</h2>
+            <p>Two CLI options are available for managing schemas from the command line.</p>
+
+            <h3>schemactl (Cross-platform)</h3>
+            <p>A Go-based CLI for Linux, macOS, and Windows.</p>
+            <pre><code># Check connection
+schemactl health
+
+# List document types
+schemactl doc-types list
+
+# List schemas
+schemactl schemas list --status active
+
+# Find best schema
+schemactl schemas find-best --doc-type Invoice --country PT</code></pre>
+
+            <h3>PowerShell Module</h3>
+            <p>For Windows users, a PowerShell module provides native cmdlets.</p>
+            <pre><code># Import the module
+Import-Module SchemaRegistry
+
+# Test connection
+Test-SRConnection
+
+# List document types
+Get-SRDocType
+
+# Find best schema
+Find-SRSchema -DocTypeCode "Invoice" -CountryCode "PT"
+
+# Create a schema
+$content = @{
+    type = "object"
+    properties = @{
+        invoiceNumber = @{ type = "string" }
+    }
+}
+New-SRSchema -Name "My Schema" -DocTypeCode "Invoice" -Content $content</code></pre>
+
+            <p><a href="cmdlets/README.md">View full cmdlets documentation</a></p>
+        </section>
+
+        <section id="api">
+            <h2>API Reference</h2>
+
+            <h3>Public Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+                <tr><td>GET</td><td>/health</td><td>Health check</td></tr>
+                <tr><td>GET</td><td>/doc-types</td><td>List active document types</td></tr>
+                <tr><td>GET</td><td>/countries</td><td>List active countries</td></tr>
+                <tr><td>GET</td><td>/reference-data</td><td>Get all reference data</td></tr>
+                <tr><td>POST</td><td>/schemas/find-best</td><td>Find best matching schema</td></tr>
+            </table>
+
+            <h3>Admin Endpoints</h3>
+            <table>
+                <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+                <tr><td>POST</td><td>/admin/schemas</td><td>Create schema</td></tr>
+                <tr><td>GET</td><td>/admin/schemas</td><td>List schemas</td></tr>
+                <tr><td>GET</td><td>/admin/schemas/:id</td><td>Get schema</td></tr>
+                <tr><td>PATCH</td><td>/admin/schemas/:id</td><td>Update schema</td></tr>
+                <tr><td>POST</td><td>/admin/schemas/:id/activate</td><td>Activate schema</td></tr>
+                <tr><td>POST</td><td>/admin/schemas/:id/deprecate</td><td>Deprecate schema</td></tr>
+                <tr><td>DELETE</td><td>/admin/schemas/:id</td><td>Delete draft schema</td></tr>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>
+            <a href="documentation.md">Technical Documentation</a> |
+            <a href="openapi.yaml">API Specification</a> |
+            <a href="cmdlets/README.md">CLI Tools</a>
+        </p>
+        <p style="margin-top: 1rem;">
+            Need help? Contact <a href="https://docdigitizer.com/contact">DocDigitizer Support</a>
+        </p>
+    </footer>
+</body>
+</html>

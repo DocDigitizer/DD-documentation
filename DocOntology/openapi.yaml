@@ -1,0 +1,894 @@
+openapi: 3.0.3
+info:
+  title: DocOntology API
+  version: 2.0.0
+  description: |
+    A SaaS API for storing and selecting JSON schemas used in document extraction pipelines.
+
+    ## Overview
+    - **Doc Types**: Reference data for document type classification (Invoice, CV, Contract, etc.)
+    - **Countries**: Reference data for country classification (ISO 3166-1 alpha-2)
+    - **Schemas**: Versioned JSON schemas with docType, country, visibility, and ownership
+    - **Selection**: Find the best matching schema given a docType and optional country
+
+    ## Visibility Rules
+    - **public**: Available to all - requires both docTypeCode AND countryCode
+    - **community**: Available to logged-in users (future)
+    - **private**: Only visible to the owner (customerId)
+
+servers:
+  - url: https://api.docdigitizer.com/registry
+    description: Production server
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Reference Data
+    description: Reference data lookup (public)
+  - name: Doc Types
+    description: Document type lookup (public)
+  - name: Countries
+    description: Country lookup (public)
+  - name: Selection
+    description: Schema selection (public)
+  - name: Doc Types Admin
+    description: Document type management (admin)
+  - name: Countries Admin
+    description: Country management (admin)
+  - name: Schemas Admin
+    description: Schema management (admin)
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns server status and database connection state
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Database disconnected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /reference-data:
+    get:
+      tags: [Reference Data]
+      summary: Get all reference data
+      description: Returns all active doc types and countries in a single request
+      responses:
+        '200':
+          description: Reference data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceDataResponse'
+
+  /doc-types:
+    get:
+      tags: [Doc Types]
+      summary: List active doc types
+      description: Get all active document types
+      responses:
+        '200':
+          description: List of active doc types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocType'
+
+  /countries:
+    get:
+      tags: [Countries]
+      summary: List active countries
+      description: Get all active countries
+      responses:
+        '200':
+          description: List of active countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+
+  /schemas/find-best:
+    post:
+      tags: [Selection]
+      summary: Find best matching schema
+      description: |
+        Find the best schema matching a docType and optional country.
+
+        **Priority:**
+        1. Customer's own schemas (if customerId provided)
+        2. Public schemas with exact country match
+        3. Public schemas without country (generic)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindBestRequest'
+            examples:
+              withCountry:
+                summary: With country
+                value:
+                  docTypeCode: Invoice
+                  countryCode: PT
+              withCustomer:
+                summary: With customer
+                value:
+                  docTypeCode: Invoice
+                  countryCode: PT
+                  customerId: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Best matching schema (or null if no match)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindBestResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/doc-types:
+    post:
+      tags: [Doc Types Admin]
+      summary: Create a doc type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocTypeRequest'
+      responses:
+        '201':
+          description: Doc type created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocType'
+        '409':
+          description: Doc type already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [Doc Types Admin]
+      summary: List all doc types (including inactive)
+      responses:
+        '200':
+          description: List of all doc types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocType'
+
+  /admin/doc-types/{code}:
+    get:
+      tags: [Doc Types Admin]
+      summary: Get a doc type by code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Doc type found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocType'
+        '404':
+          description: Doc type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Doc Types Admin]
+      summary: Update a doc type
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocTypeRequest'
+      responses:
+        '200':
+          description: Doc type updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocType'
+        '404':
+          description: Doc type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Doc Types Admin]
+      summary: Soft delete a doc type
+      description: Sets isActive to false instead of deleting
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Doc type deactivated
+        '404':
+          description: Doc type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/countries:
+    post:
+      tags: [Countries Admin]
+      summary: Create a country
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCountryRequest'
+      responses:
+        '201':
+          description: Country created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+        '409':
+          description: Country already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [Countries Admin]
+      summary: List all countries (including inactive)
+      responses:
+        '200':
+          description: List of all countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+
+  /admin/countries/{code}:
+    get:
+      tags: [Countries Admin]
+      summary: Get a country by code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 2
+      responses:
+        '200':
+          description: Country found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+        '404':
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Countries Admin]
+      summary: Update a country
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCountryRequest'
+      responses:
+        '200':
+          description: Country updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+        '404':
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Countries Admin]
+      summary: Soft delete a country
+      description: Sets isActive to false instead of deleting
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 2
+      responses:
+        '204':
+          description: Country deactivated
+        '404':
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/schemas:
+    post:
+      tags: [Schemas Admin]
+      summary: Create a schema
+      description: Create a new schema in draft status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSchemaRequest'
+      responses:
+        '201':
+          description: Schema created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [Schemas Admin]
+      summary: List schemas
+      description: Get all schemas with optional filtering and pagination
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/Status'
+        - name: docTypeCode
+          in: query
+          schema:
+            type: string
+        - name: countryCode
+          in: query
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 2
+        - name: visibility
+          in: query
+          schema:
+            $ref: '#/components/schemas/Visibility'
+        - name: customerId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: Number of items to return (default 50, max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of items to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Paginated list of schemas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSchemaList'
+
+  /admin/schemas/{id}:
+    get:
+      tags: [Schemas Admin]
+      summary: Get a schema
+      description: Get a schema by publicId (sch_xxx) or publicVersionId (schv_xxx)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Schema ID (sch_xxx) or version ID (schv_xxx)
+      responses:
+        '200':
+          description: Schema found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        '404':
+          description: Schema not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Schemas Admin]
+      summary: Update a schema
+      description: Update a schema. If active, creates a new version instead.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSchemaRequest'
+      responses:
+        '200':
+          description: Schema updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        '404':
+          description: Schema not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Schemas Admin]
+      summary: Delete a draft schema
+      description: Only draft schemas can be deleted
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Schema deleted
+        '400':
+          description: Cannot delete non-draft schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Schema not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/schemas/{id}/versions:
+    get:
+      tags: [Schemas Admin]
+      summary: Get all versions of a schema
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Public schema ID (sch_xxx)
+      responses:
+        '200':
+          description: List of all versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+
+  /admin/schemas/{id}/activate:
+    post:
+      tags: [Schemas Admin]
+      summary: Activate a schema
+      description: Transition a schema from draft to active status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        '400':
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/schemas/{id}/deprecate:
+    post:
+      tags: [Schemas Admin]
+      summary: Deprecate a schema
+      description: Transition a schema from active to deprecated status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema deprecated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        '400':
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Status:
+      type: string
+      enum: [draft, active, deprecated]
+      description: Schema lifecycle status
+
+    Visibility:
+      type: string
+      enum: [public, community, private]
+      description: Schema visibility level
+
+    DocType:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Unique code (e.g., "Invoice")
+        name:
+          type: string
+          description: Display name
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [code, name, isActive, createdAt, updatedAt]
+
+    Country:
+      type: object
+      properties:
+        code:
+          type: string
+          description: ISO 3166-1 alpha-2 code
+        name:
+          type: string
+          description: Country name
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [code, name, isActive, createdAt, updatedAt]
+
+    Schema:
+      type: object
+      properties:
+        publicId:
+          type: string
+          pattern: ^sch_[a-z0-9]{12}$
+          description: Public schema ID shared across all versions
+        publicVersionId:
+          type: string
+          pattern: ^schv_[a-z0-9]{12}$
+          description: Public version ID unique to this specific version
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        version:
+          type: integer
+          minimum: 1
+        content:
+          type: object
+          description: JSON schema content
+        status:
+          $ref: '#/components/schemas/Status'
+        customerId:
+          type: string
+          format: uuid
+          nullable: true
+        visibility:
+          $ref: '#/components/schemas/Visibility'
+        docTypeCode:
+          type: string
+        countryCode:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - publicId
+        - publicVersionId
+        - name
+        - version
+        - content
+        - status
+        - visibility
+        - docTypeCode
+        - createdAt
+        - updatedAt
+
+    PaginatedSchemaList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Schema'
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total number of matching schemas
+            limit:
+              type: integer
+            offset:
+              type: integer
+            hasMore:
+              type: boolean
+          required: [total, limit, offset, hasMore]
+      required: [data, pagination]
+
+    CreateDocTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+      required: [code, name]
+
+    UpdateDocTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        isActive:
+          type: boolean
+
+    CreateCountryRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: ISO 3166-1 alpha-2
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required: [code, name]
+
+    UpdateCountryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        isActive:
+          type: boolean
+
+    CreateSchemaRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        content:
+          type: object
+          description: JSON schema content
+        docTypeCode:
+          type: string
+          minLength: 1
+          maxLength: 50
+        countryCode:
+          type: string
+          minLength: 2
+          maxLength: 2
+        visibility:
+          $ref: '#/components/schemas/Visibility'
+        customerId:
+          type: string
+          format: uuid
+      required: [name, content, docTypeCode]
+
+    UpdateSchemaRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        content:
+          type: object
+        docTypeCode:
+          type: string
+        countryCode:
+          type: string
+          minLength: 2
+          maxLength: 2
+          nullable: true
+        visibility:
+          $ref: '#/components/schemas/Visibility'
+
+    FindBestRequest:
+      type: object
+      properties:
+        docTypeCode:
+          type: string
+          minLength: 1
+        countryCode:
+          type: string
+          minLength: 2
+          maxLength: 2
+        customerId:
+          type: string
+          format: uuid
+      required: [docTypeCode]
+
+    FindBestResponse:
+      type: object
+      properties:
+        schema:
+          allOf:
+            - $ref: '#/components/schemas/Schema'
+          nullable: true
+          description: Best matching schema or null if no match
+        matchType:
+          type: string
+          enum: [exact, fallback]
+          nullable: true
+          description: Type of match
+      required: [schema, matchType]
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, error]
+        database:
+          type: string
+          enum: [connected, disconnected]
+        timestamp:
+          type: string
+          format: date-time
+      required: [status, database, timestamp]
+
+    ReferenceDataResponse:
+      type: object
+      properties:
+        docTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocType'
+          description: All active document types
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+          description: All active countries
+      required: [docTypes, countries]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+      required: [error]
