@@ -232,39 +232,47 @@ curl "https://api.docdigitizer.com/registry/admin/schemas?countryCode=PT"
 
 ---
 
-## CLI Tools
+## PowerShell Tools
 
-For command-line management, we provide two options:
-
-### schemactl (Cross-platform CLI)
-
-A Go-based CLI tool for Linux, macOS, and Windows.
-
-```bash
-# Check connection
-schemactl health
-
-# List document types
-schemactl doc-types list
-
-# Find best schema
-schemactl schemas find-best --doc-type Invoice --country PT
-```
-
-### PowerShell Module
-
-For Windows users, a PowerShell module is available.
+For command-line management, we provide a PowerShell module.
 
 ```powershell
+# Import the module
+Import-Module SchemaRegistry
+
 # Test connection
 Test-SRConnection
 
 # List document types
 Get-SRDocType
 
+# List countries
+Get-SRCountry
+
 # Find best schema
 Find-SRSchema -DocTypeCode "Invoice" -CountryCode "PT"
+
+# List schemas
+Get-SRSchema -Status active
 ```
+
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `Test-SRConnection` | Check API health |
+| `Get-SRDocType` | List or get document types |
+| `Get-SRCountry` | List or get countries |
+| `Get-SRSchema` | List or get schemas |
+| `Get-SRSchemaVersion` | Get all versions of a schema |
+| `Find-SRSchema` | Find best matching schema |
+| `New-SRSchema` | Create a schema (draft) |
+| `Set-SRSchema` | Update a schema |
+| `Enable-SRSchema` | Activate a schema |
+| `Disable-SRSchema` | Deprecate a schema |
+| `Remove-SRSchema` | Delete a draft schema |
+| `Get-SRReferenceData` | Get all reference data |
+| `Get-SRHelp` | Show help guide |
 
 See the [cmdlets documentation](cmdlets/README.md) for installation and usage details.
 

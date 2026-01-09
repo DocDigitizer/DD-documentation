@@ -40,7 +40,7 @@ SaaS API for storing and selecting JSON schemas used in document extraction pipe
 | [Usage Guide](./DocOntology/index.html) | User-friendly HTML guide |
 | [Documentation](./DocOntology/documentation.md) | Technical documentation |
 | [API Specification](./DocOntology/openapi.yaml) | OpenAPI 3.0 spec |
-| [CLI Tools](./DocOntology/cmdlets/) | schemactl Go CLI |
+| [PowerShell Cmdlets](./DocOntology/cmdlets/) | Command-line tools |
 
 ---
 
@@ -69,18 +69,33 @@ Send-DocDigitizerDocument -FilePath "invoice.pdf"
 | `Set-DocDigitizerConfig` | Update settings |
 | `Get-DocDigitizerHelp` | Show help |
 
-### DocOntology - schemactl CLI
+### DocOntology - PowerShell Module
 
-```bash
-# Build the CLI
-cd DocOntology/cmdlets/go
-go build -o schemactl ./cmd/schemactl
+```powershell
+# Import the module
+Import-Module .\DocOntology\cmdlets\SchemaRegistry.psd1
 
-# Use the CLI
-./schemactl health
-./schemactl doc-types list
-./schemactl schemas list --status active
+# Test connection
+Test-SRConnection
+
+# List document types
+Get-SRDocType
+
+# Find best schema
+Find-SRSchema -DocTypeCode "Invoice" -CountryCode "PT"
 ```
+
+**Available Commands:**
+
+| Command | Description |
+|---------|-------------|
+| `Get-SRDocType` | List document types |
+| `Get-SRCountry` | List countries |
+| `Get-SRSchema` | List or get schemas |
+| `Find-SRSchema` | Find best matching schema |
+| `New-SRSchema` | Create a schema |
+| `Enable-SRSchema` | Activate a schema |
+| `Test-SRConnection` | Check API health |
 
 ---
 
@@ -116,9 +131,8 @@ DD-documentation/
     ├── documentation.md               # Technical documentation
     ├── index.html                     # Usage guide
     ├── openapi.yaml                   # API specification
-    └── cmdlets/                       # CLI tools
-        ├── README.md
-        └── go/                        # Go CLI source
+    └── cmdlets/                       # PowerShell module
+        └── README.md
 ```
 
 ---

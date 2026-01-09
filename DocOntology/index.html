@@ -235,7 +235,7 @@
             <li><a href="#concepts">Core Concepts</a></li>
             <li><a href="#quickstart">Quick Start</a></li>
             <li><a href="#schemas">Working with Schemas</a></li>
-            <li><a href="#cli">CLI Tools</a></li>
+            <li><a href="#cli">PowerShell</a></li>
             <li><a href="#api">API Examples</a></li>
         </ul>
     </nav>
@@ -377,25 +377,9 @@ curl "https://api.docdigitizer.com/registry/admin/schemas?docTypeCode=Invoice"</
         </section>
 
         <section id="cli">
-            <h2>CLI Tools</h2>
-            <p>Two CLI options are available for managing schemas from the command line.</p>
+            <h2>PowerShell Tools</h2>
+            <p>A PowerShell module is available for managing schemas from the command line.</p>
 
-            <h3>schemactl (Cross-platform)</h3>
-            <p>A Go-based CLI for Linux, macOS, and Windows.</p>
-            <pre><code># Check connection
-schemactl health
-
-# List document types
-schemactl doc-types list
-
-# List schemas
-schemactl schemas list --status active
-
-# Find best schema
-schemactl schemas find-best --doc-type Invoice --country PT</code></pre>
-
-            <h3>PowerShell Module</h3>
-            <p>For Windows users, a PowerShell module provides native cmdlets.</p>
             <pre><code># Import the module
 Import-Module SchemaRegistry
 
@@ -405,8 +389,14 @@ Test-SRConnection
 # List document types
 Get-SRDocType
 
+# List countries
+Get-SRCountry
+
 # Find best schema
 Find-SRSchema -DocTypeCode "Invoice" -CountryCode "PT"
+
+# List schemas
+Get-SRSchema -Status active
 
 # Create a schema
 $content = @{
@@ -416,6 +406,19 @@ $content = @{
     }
 }
 New-SRSchema -Name "My Schema" -DocTypeCode "Invoice" -Content $content</code></pre>
+
+            <h3>Available Commands</h3>
+            <table>
+                <tr><th>Command</th><th>Description</th></tr>
+                <tr><td>Test-SRConnection</td><td>Check API health</td></tr>
+                <tr><td>Get-SRDocType</td><td>List document types</td></tr>
+                <tr><td>Get-SRCountry</td><td>List countries</td></tr>
+                <tr><td>Get-SRSchema</td><td>List or get schemas</td></tr>
+                <tr><td>Find-SRSchema</td><td>Find best matching schema</td></tr>
+                <tr><td>New-SRSchema</td><td>Create a schema</td></tr>
+                <tr><td>Enable-SRSchema</td><td>Activate a schema</td></tr>
+                <tr><td>Disable-SRSchema</td><td>Deprecate a schema</td></tr>
+            </table>
 
             <p><a href="cmdlets/README.md">View full cmdlets documentation</a></p>
         </section>
@@ -451,7 +454,7 @@ New-SRSchema -Name "My Schema" -DocTypeCode "Invoice" -Content $content</code></
         <p>
             <a href="documentation.md">Technical Documentation</a> |
             <a href="openapi.yaml">API Specification</a> |
-            <a href="cmdlets/README.md">CLI Tools</a>
+            <a href="cmdlets/README.md">PowerShell Cmdlets</a>
         </p>
         <p style="margin-top: 1rem;">
             Need help? Contact <a href="https://docdigitizer.com/contact">DocDigitizer Support</a>
